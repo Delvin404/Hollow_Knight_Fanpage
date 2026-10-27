@@ -886,8 +886,8 @@
       /* Needle: crosses the screen, tilts and spins as you scroll; scroll speed adds extra spin */
       var sy = window.scrollY, max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
       sSmooth += (clamp(sy / max, 0, 1) - sSmooth) * (1 - Math.exp(-dt * 5));
-      kick += (sy - lastSy) * 0.0035; lastSy = sy;
-      kick = clamp(kick, -6, 6) * Math.exp(-dt * 2.4);
+      kick += (sy - lastSy) * 0.0015; lastSy = sy;
+      kick = clamp(kick, -2, 2) * Math.exp(-dt * 4.0);
       spin += kick;
       var halfH = 17 * Math.tan(27.5 * Math.PI / 180), halfW = halfH * C.aspect;
       var sc = (0.5 + 0.4 * Math.min(1, C.aspect / 1.6)) * bgScale;
