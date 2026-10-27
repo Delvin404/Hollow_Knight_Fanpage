@@ -301,10 +301,78 @@
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .rv { opacity: 1 !important; transform: none !important; }
   }
+
+  /* ---------- PRELOADER ANIMATION ---------- */
+  #preloader {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--ink);
+    display: grid; place-items: center;
+    pointer-events: all;
+    transition: visibility 0.5s;
+  }
+  #preloader.done { visibility: hidden; pointer-events: none; }
+
+  /* The threaded seam that splits the screen */
+  .pre-seam {
+    position: absolute; top: 50%; left: 0; right: 0; height: 1px;
+    background: var(--red);
+    box-shadow: 0 0 15px var(--red);
+    transform: scaleX(0);
+    animation: seam-draw 1.2s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+  }
+  #preloader.done .pre-seam {
+    animation: seam-split 0.8s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+  }
+
+  /* The gothic eye */
+  .pre-orb {
+    position: relative; width: 120px; height: 120px;
+    display: grid; place-items: center;
+    animation: orb-pulse 2s ease-in-out infinite;
+  }
+  .pre-ring {
+    position: absolute; inset: -20px; border-radius: 50%;
+    border: 1px dashed rgba(220, 38, 56, 0.4);
+    animation: spin 8s linear infinite;
+  }
+  .pre-eye {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: radial-gradient(circle, var(--red) 0%, var(--red-deep) 60%, transparent 100%);
+    box-shadow: 0 0 40px var(--red), inset 0 0 20px var(--silk);
+    transform: scaleY(0);
+    animation: eye-open 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s forwards;
+  }
+
+  @keyframes seam-draw {
+    to { transform: scaleX(1); }
+  }
+  @keyframes seam-split {
+    to { transform: scaleX(1) rotate(45deg) scaleY(200); opacity: 0; }
+  }
+  @keyframes orb-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  @keyframes eye-open {
+    0% { transform: scaleY(0); opacity: 0; }
+    40% { transform: scaleY(1); opacity: 1; }
+    80% { transform: scaleY(0.1); opacity: 1; }
+    100% { transform: scaleY(1); opacity: 1; }
+  }
 </style>
 
 </head>
 <body>
+
+<!-- Preloader Overlay -->
+<div id="preloader">
+  <div class="pre-seam"></div>
+  <div class="pre-orb">
+    <div class="pre-ring"></div>
+    <div class="pre-eye"></div>
+  </div>
+</div>
+
 <canvas id="bg" aria-hidden="true"></canvas>
 <div class="glow" aria-hidden="true"></div>
 <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
@@ -1233,6 +1301,31 @@
     var tgt = targetStage(e); mark(null);
     if (tgt) tgt.handleFiles(e.dataTransfer.files);
   });
+
+  /* ---------- Preloader Logic ---------- */
+  (function preloader() {
+    var pre = document.getElementById('preloader');
+    if (!pre) return;
+
+    function finish() {
+      if (pre.classList.contains('done')) return;
+      pre.classList.add('done');
+      // Remove from DOM after animation finishes to ensure it doesn't block any clicks
+      setTimeout(function () { pre.remove(); }, 1000);
+    }
+
+    // Wait for the page to fully load, but ensure the animation shows for at least 2.5 seconds
+    var minTime = new Promise(function(resolve) { setTimeout(resolve, 2500); });
+    var pageLoad = new Promise(function(resolve) {
+      if (document.readyState === 'complete') resolve();
+      else window.addEventListener('load', resolve);
+    });
+
+    Promise.all([minTime, pageLoad]).then(finish);
+
+    // Fallback: If something hangs, clear it anyway after 6 seconds
+    setTimeout(finish, 6000);
+  })();
 })();
 </script>
 
