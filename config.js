@@ -1,7 +1,3 @@
-/* ==================================================================
-   EDIT THIS BLOCK to set your models and how they behave.
-   Sizes are set here only. Everything else on the page can stay as it is.
-   ================================================================== */
 window.SITE_CONFIG = {
   // ---- Hornet model (top of the page) ----
   modelUrl: 'models/hollow_knight1.glb',
@@ -27,10 +23,10 @@ window.SITE_CONFIG = {
   // ---- Second model (the round window at the bottom of the page) ----
   showSecondModel: true,
   secondModel: {
-    url: 'models/hollow_knight2.glb',          // <-- FIXED: full path + .glb extension
-    title: 'Hollow Knight',                     // heading shown next to the window
-    role: 'Second model',
-    description: 'A second model in the round window. Replace models/hollow_knight2.glb or set secondModel.url in config.js.',
+    url: 'models/hollow_knight2.glb',          
+    title: 'Hollow Knight',                    
+    role: 'The Vessel',
+    description: 'A creation of the Pale King, raised to contain the Radiance. Sealed within the Black Egg, this fallen knight waits in silence. Discover the tragic truth of Hallownests greatest sacrifice.',
     scale: 1,
     offset: { x: 0, y: 0, z: 0 },
     rotationY: 0,
@@ -38,7 +34,6 @@ window.SITE_CONFIG = {
     flipTextures: false
   },
 
-  // ---- Background model (moves as you scroll) ----
   backgroundModel: {
     url: '',
     scale: 1
