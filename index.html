@@ -416,7 +416,6 @@
           <button type="button" class="btn" id="pickModel">Choose .glb file</button>
         </div>
         <div class="stage-foot">
-          <span id="hornetStatus" role="status">Drag to spin, click for stars</span>
           <button type="button" class="btn" id="flipBtn" hidden>Flip textures</button>
         </div>
         <input type="file" id="modelFile" accept=".glb,.png,.jpg,.jpeg,.webp" multiple hidden>
@@ -652,7 +651,6 @@
             <button type="button" class="btn" id="pick2">Choose .glb file</button>
           </div>
           <div class="stage-foot">
-            <span id="status2" role="status">Drag to spin, click for stars</span>
             <button type="button" class="btn" id="flipBtn2" hidden>Flip textures</button>
           </div>
           <input type="file" id="file2" accept=".glb,.png,.jpg,.jpeg,.webp" multiple hidden>
@@ -1070,7 +1068,6 @@
       baseFit = 2.7 / (Math.max(size.x, size.y, size.z) || 1);
       layoutModel();
       slot.hidden = true;
-      status.textContent = 'Drag to spin, click for stars';
       applyTextures();
     }
 
