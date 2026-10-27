@@ -54,16 +54,50 @@
   :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
   [id] { scroll-margin-top: 20px; }
 
-  /* Header */
+  /* Header & Navigation */
   header.top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding: 20px 0 0; }
   .mark { font: 700 26px var(--display); text-decoration: none; letter-spacing: .02em; }
   .mark span { color: var(--red); }
+  
+  /* Desktop Nav */
   nav { display: flex; gap: 8px 24px; flex-wrap: wrap; }
   nav a {
     font: 500 15px var(--label); letter-spacing: .14em; text-decoration: none; color: var(--rose); padding-bottom: 3px;
     background: linear-gradient(var(--red), var(--red)) no-repeat 0 100% / 0 2px; transition: background-size .35s var(--ease), color .25s;
   }
   nav a:hover { color: var(--silk); background-size: 100% 2px; }
+
+  /* Mobile Menu Button */
+  .menu-btn {
+    display: none; background: transparent; border: 0; cursor: pointer; padding: 10px; margin: -10px -10px -10px 0;
+    flex-direction: column; gap: 5px; z-index: 100;
+  }
+  .menu-btn span {
+    display: block; width: 28px; height: 2px; background: var(--silk);
+    transition: transform .3s var(--ease), opacity .3s var(--ease);
+  }
+  .menu-btn.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .menu-btn.active span:nth-child(2) { opacity: 0; }
+  .menu-btn.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Mobile Dropdown Menu */
+  .mobile-nav {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--ink); border-bottom: 1px solid var(--red);
+    flex-direction: column; padding: 10px 0 20px; z-index: 99;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    opacity: 0; pointer-events: none; transform: translateY(-10px);
+    transition: opacity .3s var(--ease), transform .3s var(--ease);
+  }
+  .mobile-nav.open { opacity: 1; pointer-events: all; transform: translateY(0); }
+  .mobile-nav a {
+    font: 700 18px var(--label); letter-spacing: .15em; text-transform: uppercase;
+    text-decoration: none; color: var(--rose); padding: 16px 24px;
+    border-bottom: 1px solid rgba(243, 233, 228, 0.05);
+    transition: color .2s, padding-left .3s var(--ease);
+  }
+  .mobile-nav a:hover { color: var(--red); padding-left: 32px; }
+  .mobile-nav a:last-child { border-bottom: 0; }
 
   /* Hero */
   .hero {
@@ -281,6 +315,12 @@
   @media (hover: none) { .cursor-glow { display: none; } }
 
   @media (max-width: 900px) {
+    /* Mobile Nav Rules */
+    nav { display: none; }
+    .menu-btn { display: flex; }
+    .mobile-nav { display: flex; }
+    header.top { position: relative; align-items: center; }
+
     .hero { grid-template-columns: minmax(0, 1fr); padding-top: 24px; }
     .hero h1 { grid-column: 1; margin: 0; font-size: clamp(88px, 28vw, 200px); }
     .hero .text { grid-row: 2; }
@@ -383,6 +423,8 @@
 <div class="wrap">
   <header class="top">
     <a class="mark" href="#hornet">Pharloom <span>Codex</span></a>
+    
+    <!-- Desktop Nav -->
     <nav aria-label="Sections">
       <a href="#hornet">Hornet</a>
       <a href="#basics">Basics</a>
@@ -391,6 +433,21 @@
       <a href="#faq">Questions</a>
       <a href="#gallery" id="navGallery">Hollow Knight</a>
     </nav>
+
+    <!-- Mobile Menu Button -->
+    <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <!-- Mobile Dropdown Nav -->
+    <div class="mobile-nav" id="mobileNav">
+      <a href="#hornet">Hornet</a>
+      <a href="#basics">Basics</a>
+      <a href="#pharloom">Pharloom</a>
+      <a href="#cast">The cast</a>
+      <a href="#faq">Questions</a>
+      <a href="#gallery" id="navGalleryMob">Hollow Knight</a>
+    </div>
   </header>
 
   <section class="hero" id="hornet" aria-labelledby="hornet-h">
@@ -678,6 +735,34 @@
   var reduced = false;
   try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
+  /* ---------- Mobile Navigation Toggle ---------- */
+  (function mobileNav() {
+    var btn = $('menuBtn');
+    var nav = $('mobileNav');
+    if (!btn || !nav) return;
+    
+    function toggleMenu(force) {
+      var isOpen = force !== undefined ? force : !nav.classList.contains('open');
+      btn.classList.toggle('active', isOpen);
+      nav.classList.toggle('open', isOpen);
+      btn.setAttribute('aria-expanded', isOpen);
+    }
+    
+    btn.addEventListener('click', function() { toggleMenu(); });
+    
+    // Close menu when a link is clicked
+    nav.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() { toggleMenu(false); });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+      if (nav.classList.contains('open') && !btn.contains(e.target) && !nav.contains(e.target)) {
+        toggleMenu(false);
+      }
+    });
+  })();
+
   /* ---------- Settings: defaults, then the config block at the top of the page ---------- */
   var CFG = {
     modelUrl: 'models/hornet.glb', modelScale: 1, modelOffset: { x: 0, y: 0, z: 0 }, modelRotationY: 0,
@@ -700,7 +785,7 @@
   $('secondBody').textContent = SM.description || '';
   $('secondRole').hidden = !SM.role;
   $('secondBody').hidden = !SM.description;
-  if (CFG.showSecondModel === false) { $('gallery').hidden = true; $('navGallery').hidden = true; }
+  if (CFG.showSecondModel === false) { $('gallery').hidden = true; $('navGallery').hidden = true; $('navGalleryMob').hidden = true; }
 
   /* ---------- Page animation (no 3D library needed) ---------- */
   (function ui() {
