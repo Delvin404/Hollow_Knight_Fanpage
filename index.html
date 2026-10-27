@@ -1,0 +1,1240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Pharloom Codex</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;700&family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+SC:wght@500;700&display=swap">
+<style>
+  /* Layout: giant gothic name over an arched model window on the right; facts strip, mechanics, a thread-route of regions, a scrolling word band, cast index, FAQ, red About band, then a round second-model window. A needle model drifts across the background as you scroll. */
+  :root {
+    color-scheme: dark;
+    --ink: #0c0508;
+    --red: #dc2638;
+    --red-deep: #a8182b;
+    --silk: #f3e9e4;
+    --rose: #b8949b;
+    --line: rgba(243, 233, 228, 0.18);
+    --display: 'Grenze Gotisch', 'UnifrakturCook', Georgia, serif;
+    --body: 'Alegreya', Georgia, 'Times New Roman', serif;
+    --label: 'Alegreya SC', Georgia, serif;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--ink);
+    color: var(--silk);
+    font: 500 20px/1.55 var(--body);
+    padding-block: 8px 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    overflow-x: hidden;
+  }
+  #bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; display: block; }
+  .glow {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(55% 50% at 78% 22%, rgba(220, 38, 56, 0.20), transparent 70%),
+      radial-gradient(90% 60% at 10% 110%, rgba(168, 24, 43, 0.18), transparent 65%);
+  }
+  .cursor-glow {
+    position: fixed; left: 0; top: 0; width: 560px; height: 560px; margin: -280px 0 0 -280px; z-index: 0;
+    border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .6s;
+    background: radial-gradient(circle, rgba(220, 38, 56, 0.17), transparent 62%);
+  }
+  .cursor-glow.on { opacity: 1; }
+  .progress {
+    position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; height: 3px; z-index: 20;
+    background: var(--red); transform-origin: 0 50%; transform: scaleX(0); box-shadow: 0 0 14px rgba(220, 38, 56, 0.9); pointer-events: none;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+  [id] { scroll-margin-top: 20px; }
+
+  /* Header */
+  header.top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding: 20px 0 0; }
+  .mark { font: 700 26px var(--display); text-decoration: none; letter-spacing: .02em; }
+  .mark span { color: var(--red); }
+  nav { display: flex; gap: 8px 24px; flex-wrap: wrap; }
+  nav a {
+    font: 500 15px var(--label); letter-spacing: .14em; text-decoration: none; color: var(--rose); padding-bottom: 3px;
+    background: linear-gradient(var(--red), var(--red)) no-repeat 0 100% / 0 2px; transition: background-size .35s var(--ease), color .25s;
+  }
+  nav a:hover { color: var(--silk); background-size: 100% 2px; }
+
+  /* Hero */
+  .hero {
+    display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr); column-gap: 24px;
+    padding: 36px 0 56px; align-items: start;
+  }
+  .hero h1 {
+    grid-column: 1; grid-row: 1; position: relative; z-index: 3; pointer-events: none;
+    margin: 0 -18% 0 0; font: 700 clamp(96px, 19vw, 250px)/0.82 var(--display); letter-spacing: -.01em;
+    color: var(--silk); text-shadow: 0 0 60px rgba(220, 38, 56, 0.35);
+    transform: translate3d(0, calc(var(--py, 0) * 1px), 0);
+  }
+  .ch { display: inline-block; animation: rise 1s var(--ease) calc(var(--i) * 90ms) backwards, glint 7s ease-in-out calc(1.6s + var(--i) * 170ms) infinite; }
+  .hero .text { grid-column: 1; grid-row: 2; padding-top: 28px; max-width: 520px; position: relative; z-index: 2; }
+  .hero .text > * { animation: up .9s var(--ease) backwards; }
+  .hero .text > :nth-child(1) { animation-delay: .55s; }
+  .hero .text > :nth-child(2) { animation-delay: .68s; }
+  .hero .text > :nth-child(3) { animation-delay: .81s; }
+  .hero .text > :nth-child(4) { animation-delay: .94s; }
+  .eyebrow { display: flex; align-items: center; gap: 14px; margin: 0 0 14px; font: 700 14px var(--label); letter-spacing: .24em; color: var(--red); text-transform: uppercase; }
+  .eyebrow::before { content: ""; width: 54px; height: 1px; background: var(--red); flex: none; animation: grow 1.1s var(--ease) .8s backwards; }
+  .lede { font-style: italic; font-size: 25px; line-height: 1.3; margin: 0 0 14px; color: var(--silk); }
+  .hero p.body { margin: 0 0 28px; color: #d9cbc8; }
+  .facts { display: flex; flex-wrap: wrap; gap: 18px 34px; margin: 0; padding: 18px 0 0; border-top: 1px solid var(--line); }
+  .facts div { min-width: 0; }
+  .facts dt { font: 500 13px var(--label); letter-spacing: .2em; color: var(--rose); text-transform: uppercase; }
+  .facts dd { margin: 2px 0 0; font: 700 21px var(--display); }
+
+  .stage-col {
+    grid-column: 2; grid-row: 1 / span 2; justify-self: end; width: min(100%, 470px); margin-right: 4px; position: relative;
+    transform: translate3d(0, calc(var(--py2, 0) * 1px), 0);
+  }
+  .stage-col::before {
+    content: ""; position: absolute; top: 18px; right: -16px; bottom: -16px; left: 16px; border: 1px solid var(--red);
+    border-radius: 235px 235px 0 0; pointer-events: none; opacity: .8; animation: fade .9s ease 1s backwards;
+  }
+  .model-stage {
+    position: relative; min-height: 650px; border-radius: 235px 235px 0 0; overflow: hidden;
+    border: 1px solid var(--line);
+    background: radial-gradient(70% 55% at 50% 62%, rgba(220, 38, 56, 0.30), rgba(12, 5, 8, 0.85) 72%);
+    touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none;
+  }
+  .stage-col .model-stage { animation: rise-in 1.3s var(--ease) .25s backwards; }
+  .model-stage.grabbing { cursor: grabbing; }
+  .model-stage.dropping { border-color: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .model-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .slot {
+    position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px;
+    text-align: center; padding: 120px 40px 80px; pointer-events: none;
+  }
+  .slot h2 { margin: 0; font: 700 30px/1.05 var(--display); }
+  .slot p { margin: 0; max-width: 28ch; color: var(--rose); font-size: 18px; line-height: 1.4; }
+  .btn {
+    font: 700 15px var(--label); letter-spacing: .16em; text-transform: uppercase; color: var(--silk);
+    background: transparent; border: 0; border-bottom: 2px solid var(--red); padding: 6px 0; cursor: pointer; pointer-events: auto;
+    transition: color .2s, letter-spacing .3s var(--ease);
+  }
+  .btn:hover { color: var(--red); letter-spacing: .22em; }
+  .stage-foot { position: absolute; left: 0; right: 0; bottom: 16px; display: flex; justify-content: center; gap: 18px; align-items: center; pointer-events: none; }
+  .stage-foot .btn { font-size: 12px; }
+  .stage-foot span { font: italic 500 16px var(--body); color: var(--rose); text-align: center; }
+
+  /* At a glance */
+  .glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 22px 0; margin: 0 0 20px; padding: 26px 0; border-block: 1px solid var(--line); }
+  .glance div { padding: 2px 24px; border-left: 1px solid var(--line); min-width: 0; }
+  .glance div:first-child { border-left: 0; padding-left: 0; }
+  .glance dt { font: 500 13px var(--label); letter-spacing: .2em; text-transform: uppercase; color: var(--rose); }
+  .glance dd { margin: 4px 0 0; font: 700 26px/1.15 var(--display); transition: color .3s; }
+  .glance div:hover dd { color: var(--red); }
+
+  /* Shared section type */
+  section.block { padding: 56px 0 24px; }
+  h2.sec { margin: 0 0 10px; font: 700 clamp(44px, 7vw, 84px)/0.95 var(--display); text-wrap: balance; }
+  .sec-lede { color: var(--rose); max-width: 56ch; margin: 0 0 40px; font-style: italic; }
+  h3.sub { margin: 48px 0 18px; font: 500 15px var(--label); letter-spacing: .26em; text-transform: uppercase; color: var(--red); }
+
+  /* Basics */
+  .terms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 64px; }
+  .term { position: relative; padding: 22px 0 26px; border-top: 1px solid var(--line); min-width: 0; }
+  .term::before { content: ""; position: absolute; top: -1px; left: 0; height: 1px; width: 0; background: var(--red); transition: width .6s var(--ease); }
+  .term:hover::before { width: 100%; }
+  .term h4 { margin: 0; font: 700 32px/1.05 var(--display); transition: color .3s, transform .4s var(--ease); }
+  .term:hover h4 { color: var(--red); transform: translateX(8px); }
+  .term .kind { display: block; margin: 4px 0 8px; font: italic 500 17px var(--body); color: var(--red); }
+  .term p { margin: 0; color: #dccfcb; }
+  .moves { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0; border-block: 1px solid var(--line); }
+  .moves div { padding: 22px 24px 24px; border-left: 1px solid var(--line); min-width: 0; transition: background .35s, transform .4s var(--ease); }
+  .moves div:first-child { border-left: 0; padding-left: 0; }
+  .moves div:hover { background: linear-gradient(180deg, rgba(220, 38, 56, 0.16), transparent); transform: translateY(-4px); }
+  .moves b { display: block; font: 700 28px/1.1 var(--display); }
+  .moves span { display: block; margin-top: 6px; color: var(--rose); font-size: 18px; line-height: 1.4; }
+
+  /* Route of regions: the red thread fills as you scroll */
+  .route { position: relative; margin: 0; padding: 0 0 0 54px; list-style: none; }
+  .route::before { content: ""; position: absolute; left: 13px; top: 8px; bottom: 8px; width: 2px; background: rgba(243, 233, 228, 0.16); }
+  .route::after {
+    content: ""; position: absolute; left: 13px; top: 8px; bottom: 8px; width: 2px; background: var(--red);
+    transform-origin: 50% 0; transform: scaleY(var(--rp, 0)); box-shadow: 0 0 14px rgba(220, 38, 56, 0.9);
+  }
+  .stop { position: relative; padding: 0 0 34px; max-width: 62ch; }
+  .stop::before {
+    content: ""; position: absolute; left: -50px; top: 9px; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--ink); border: 2px solid var(--red); transition: background .35s, box-shadow .35s;
+  }
+  .stop.lit::before { background: var(--red); box-shadow: 0 0 16px rgba(220, 38, 56, 0.9); }
+  .stop.current::after {
+    content: ""; position: absolute; left: -50px; top: 9px; width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--red); animation: ping 1.8s ease-out infinite; pointer-events: none;
+  }
+  .stop h3 { margin: 0 0 4px; font: 700 clamp(30px, 4vw, 42px)/1.05 var(--display); transition: transform .4s var(--ease), color .3s; }
+  .stop:hover h3 { transform: translateX(8px); }
+  .stop p { margin: 0; color: #dccfcb; }
+  .route-note { margin: 4px 0 0 54px; color: var(--rose); font-style: italic; }
+
+  /* Word band that skews with scroll speed */
+  .marquee { position: relative; margin: 40px 0 0 calc(50% - 50vw); width: 100vw; border-block: 1px solid var(--line); overflow: hidden; padding: 6px 0; }
+  .marquee-skew { transform: skewX(calc(var(--skew, 0) * 1deg)); will-change: transform; }
+  .marquee-track { display: flex; align-items: center; gap: 34px; width: max-content; animation: marq 38s linear infinite; }
+  .marquee-track span { font: 700 clamp(56px, 9vw, 116px)/1.1 var(--display); color: transparent; -webkit-text-stroke: 1px rgba(243, 233, 228, 0.55); white-space: nowrap; }
+  .marquee-track span:nth-of-type(3n) { color: var(--red); -webkit-text-stroke: 0; }
+  .marquee-track i { flex: none; width: 14px; height: 14px; background: var(--red); transform: rotate(45deg); }
+
+  /* Cast index */
+  .group { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 0 12px; margin-bottom: 36px; }
+  .group-label {
+    font: 700 15px var(--label); letter-spacing: .3em; text-transform: uppercase; color: var(--red);
+    writing-mode: vertical-rl; transform: rotate(180deg); justify-self: start; padding-top: 22px;
+  }
+  .row {
+    position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr); gap: 6px 48px;
+    padding: 24px 0 26px; border-top: 1px solid var(--line); transition: padding-left .3s;
+  }
+  .row::before { content: ""; position: absolute; top: -1px; left: 0; height: 1px; width: 0; background: var(--red); transition: width .5s; }
+  .row:hover::before { width: 100%; }
+  .row:hover { padding-left: 14px; }
+  .row h3 { margin: 0; font: 700 clamp(30px, 4vw, 46px)/1 var(--display); transition: color .3s; }
+  .row:hover h3 { color: var(--red); }
+  .row .role { display: block; margin-top: 6px; font: italic 500 18px var(--body); color: var(--rose); }
+  .row p { margin: 0; color: #dccfcb; align-self: center; max-width: 52ch; }
+
+  /* FAQ */
+  .faq { max-width: 820px; }
+  .faq details { border-top: 1px solid var(--line); padding: 4px 0; }
+  .faq details:last-child { border-bottom: 1px solid var(--line); }
+  .faq summary {
+    list-style: none; cursor: pointer; padding: 18px 40px 18px 0; position: relative;
+    font: 700 clamp(24px, 3vw, 30px)/1.15 var(--display); transition: color .25s;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; position: absolute; right: 4px; top: 14px; font: 500 34px var(--body); color: var(--red); transition: transform .4s var(--ease); }
+  .faq details[open] summary::after { content: "+"; transform: rotate(135deg); }
+  .faq summary:hover { color: var(--red); }
+  .faq details[open] .ans { animation: open .5s var(--ease); }
+  .faq .ans { padding: 0 0 22px; max-width: 62ch; color: #dccfcb; }
+  .faq .ans p { margin: 0 0 10px; }
+  .faq code { font: 500 17px ui-monospace, 'SF Mono', Menlo, Consolas, monospace; background: rgba(243, 233, 228, 0.1); padding: 1px 6px; }
+
+  /* About band */
+  .about {
+    position: relative; isolation: isolate;
+    background: var(--red-deep); color: var(--silk);
+    width: 100vw; margin: 56px 0 0 calc(50% - 50vw);
+    padding: 56px calc(50vw - 50%) 64px;
+  }
+  .about::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.06) 0 2px, transparent 2px 24px);
+    animation: sheen 14s linear infinite;
+  }
+  .about h2 { margin: 0 0 14px; font: 700 clamp(44px, 7vw, 84px)/0.95 var(--display); }
+  .about p { margin: 0; max-width: 60ch; font-size: 22px; line-height: 1.5; }
+
+  /* Second model */
+  .showcase { padding: 80px 0 56px; overflow-x: clip; }
+  .second-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 56px; align-items: center; }
+  .second-text { min-width: 0; }
+  .second-text h2.sec { font-size: clamp(44px, 6vw, 76px); }
+  .second-text .lede { margin-top: 4px; }
+  .second-text .body { margin: 0 0 14px; color: #d9cbc8; max-width: 46ch; }
+  .orb { position: relative; width: min(100%, 520px); aspect-ratio: 1; justify-self: center; margin: 34px; max-width: calc(100% - 68px); }
+  .orb::before, .orb::after { content: ""; position: absolute; border-radius: 50%; pointer-events: none; }
+  .orb::before { inset: -20px; border: 1px dashed rgba(220, 38, 56, 0.75); animation: spin 46s linear infinite; }
+  .orb::after { inset: -34px; border: 1px solid var(--line); }
+  .orb .model-stage { position: absolute; inset: 0; min-height: 0; border-radius: 50%; }
+  .orb .slot { padding: 70px 56px; }
+  .orb .stage-foot { bottom: 13%; flex-direction: column; gap: 6px; }
+
+  footer { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding: 36px 0 calc(40px + env(safe-area-inset-bottom, 0px)); color: var(--rose); font-size: 17px; }
+  footer strong { font: 700 14px var(--label); letter-spacing: .2em; text-transform: uppercase; color: var(--silk); }
+  footer p { margin: 0 0 10px; max-width: 80ch; }
+  footer a { text-decoration-color: var(--red); text-underline-offset: 3px; }
+
+  /* Scroll reveals (classes are added by script only to things below the first screen) */
+  .rv { opacity: 0; transform: translateY(34px); transition: opacity .9s var(--ease) var(--d, 0ms), transform .9s var(--ease) var(--d, 0ms); }
+  .rv-left { transform: translateX(-38px); }
+  .rv-scale { transform: translateY(20px) scale(.94); }
+  .rv.in { opacity: 1; transform: none; }
+
+  /* Keyframes */
+  @keyframes rise { from { opacity: 0; transform: translateY(45%) rotate(5deg); filter: blur(10px); } to { opacity: 1; transform: none; filter: blur(0); } }
+  @keyframes glint {
+    0%, 72%, 100% { color: var(--silk); text-shadow: 0 0 60px rgba(220, 38, 56, 0.35); }
+    86% { color: #ffd3d8; text-shadow: 0 0 34px rgba(255, 84, 104, 0.95), 0 0 90px rgba(220, 38, 56, 0.6); }
+  }
+  @keyframes up { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+  @keyframes fade { from { opacity: 0; } to { opacity: .8; } }
+  @keyframes grow { from { width: 0; } to { width: 54px; } }
+  @keyframes rise-in { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes marq { to { transform: translateX(-50%); } }
+  @keyframes open { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+  @keyframes ping { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(2.8); opacity: 0; } }
+  @keyframes sheen { to { background-position: 240px 0; } }
+
+  @media (hover: none) { .cursor-glow { display: none; } }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: minmax(0, 1fr); padding-top: 24px; }
+    .hero h1 { grid-column: 1; margin: 0; font-size: clamp(88px, 28vw, 200px); }
+    .hero .text { grid-row: 2; }
+    .stage-col { grid-column: 1; grid-row: 3; justify-self: center; margin: 36px 0 0; width: min(100%, 400px); }
+    .stage-col::before { border-radius: 200px 200px 0 0; }
+    .model-stage { min-height: 540px; border-radius: 200px 200px 0 0; }
+    .terms { grid-template-columns: minmax(0, 1fr); }
+    .group { grid-template-columns: minmax(0, 1fr); }
+    .group-label { writing-mode: horizontal-tb; transform: none; padding: 0 0 12px; }
+    .row { grid-template-columns: minmax(0, 1fr); }
+    .glance div, .moves div { padding-left: 16px; padding-right: 16px; }
+    .second-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    .orb .model-stage { min-height: 0; border-radius: 50%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .rv { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="glow" aria-hidden="true"></div>
+<div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<script src="config.js"></script>
+
+<div class="wrap">
+  <header class="top">
+    <a class="mark" href="#hornet">Pharloom <span>Codex</span></a>
+    <nav aria-label="Sections">
+      <a href="#hornet">Hornet</a>
+      <a href="#basics">Basics</a>
+      <a href="#pharloom">Pharloom</a>
+      <a href="#cast">The cast</a>
+      <a href="#faq">Questions</a>
+      <a href="#gallery" id="navGallery">Showcase</a>
+    </nav>
+  </header>
+
+  <section class="hero" id="hornet" aria-labelledby="hornet-h">
+    <h1 id="hornet-h">Hornet</h1>
+
+    <div class="text">
+      <p class="eyebrow">Protagonist of Silksong</p>
+      <p class="lede">Princess-Protector of Hallownest's ruins</p>
+      <p class="body">Once the guardian keeping watch over Hallownest, Hornet is carried off to Pharloom, a kingdom she has never seen. Armed with a needle and the silk she can spin, she fights her way upward toward the Citadel.</p>
+      <dl class="facts">
+        <div><dt>Weapon</dt><dd>Needle</dd></div>
+        <div><dt>Power</dt><dd>Silk</dd></div>
+        <div><dt>Heading to</dt><dd>The Citadel</dd></div>
+      </dl>
+    </div>
+
+    <div class="stage-col">
+      <div class="model-stage" id="stage" tabindex="0" aria-label="3D model of Hornet. Drag sideways to spin it. Click or press Enter for a burst of stars.">
+        <canvas id="hornetGL"></canvas>
+        <div class="slot" id="slot">
+          <h2>Hornet's model goes here</h2>
+          <p>Set it in the config block at the top of the page, or drop a .glb file on this window.</p>
+          <button type="button" class="btn" id="pickModel">Choose .glb file</button>
+        </div>
+        <div class="stage-foot">
+          <span id="hornetStatus" role="status">Drag to spin, click for stars</span>
+          <button type="button" class="btn" id="flipBtn" hidden>Flip textures</button>
+        </div>
+        <input type="file" id="modelFile" accept=".glb,.png,.jpg,.jpeg,.webp" multiple hidden>
+      </div>
+    </div>
+  </section>
+
+  <dl class="glance" aria-label="Game at a glance">
+    <div><dt>Developer</dt><dd>Team Cherry</dd></div>
+    <div><dt>Announced</dt><dd>February 2019</dd></div>
+    <div><dt>Released</dt><dd>4 September 2025</dd></div>
+    <div><dt>Platforms</dt><dd>PC, Switch, Xbox, PlayStation</dd></div>
+  </dl>
+
+  <section class="block" id="basics" aria-labelledby="basics-h">
+    <h2 class="sec" id="basics-h">Silk and needle</h2>
+    <p class="sec-lede">The handful of ideas that explain how Hornet fights, heals and gets stronger.</p>
+
+    <div class="terms">
+      <div class="term">
+        <h4>Silk</h4><span class="kind">The resource</span>
+        <p>Fuels healing and special attacks. You build it by landing needle hits, so fighting well keeps you stocked.</p>
+      </div>
+      <div class="term">
+        <h4>Bind</h4><span class="kind">Healing</span>
+        <p>Spend Silk to restore health. It costs nine Silk and restores three masks, and a hit taken mid-bind wastes the lot.</p>
+      </div>
+      <div class="term">
+        <h4>Silk Skills</h4><span class="kind">Special attacks</span>
+        <p>Powerful moves paid for with Silk, such as Silkspear.</p>
+      </div>
+      <div class="term">
+        <h4>Crests</h4><span class="kind">Gear sets</span>
+        <p>Each crest changes Hornet's moveset and how many tool slots she has. You begin with the Hunter Crest, a well-rounded pick for early play.</p>
+      </div>
+      <div class="term">
+        <h4>Tools</h4><span class="kind">Fill the crest slots</span>
+        <p>Red tools are active gadgets, blue tools are passive defence, and yellow tools are passive boosts for offence or exploration.</p>
+      </div>
+      <div class="term">
+        <h4>Rosaries and Shell Shards</h4><span class="kind">Money and refills</span>
+        <p>Rosaries are the currency for shops. Shell Shards refill your limited-use red tools at a bench.</p>
+      </div>
+      <div class="term">
+        <h4>Masks and Spools</h4><span class="kind">Health and Silk capacity</span>
+        <p>Collect four mask shards for one extra mask of health. Spool fragments raise the most Silk you can hold.</p>
+      </div>
+      <div class="term">
+        <h4>Bellways</h4><span class="kind">Fast travel</span>
+        <p>Stations that let you hop back across the map. The first opens after you free the Bell Beast in The Marrow.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Hornet's moves</h3>
+    <div class="moves">
+      <div><b>Needle</b><span>Quick, sharp strikes</span></div>
+      <div><b>Swift Step</b><span>A fast dash</span></div>
+      <div><b>Wall-jump</b><span>Climb by kicking off walls</span></div>
+      <div><b>Clawline</b><span>A harpoon for both travel and damage</span></div>
+      <div><b>Parry</b><span>Turn projectiles aside</span></div>
+    </div>
+  </section>
+
+  <section class="block" id="pharloom" aria-labelledby="pharloom-h">
+    <h2 class="sec" id="pharloom-h">Up through Pharloom</h2>
+    <p class="sec-lede">The early and middle regions in the order most players meet them. The path can vary, and the later regions are left for you to find.</p>
+
+    <ol class="route" id="route">
+      <li class="stop"><h3>Moss Grotto</h3><p>The first area after Hornet escapes her cage, thick with green moss.</p></li>
+      <li class="stop"><h3>The Marrow</h3><p>Moss gives way to rocky, bone-like ground as the air starts to heat up.</p></li>
+      <li class="stop"><h3>Deep Docks</h3><p>A hot place with lava glowing behind armoured enemies.</p></li>
+      <li class="stop"><h3>Far Fields</h3><p>Rising lava currents create updrafts, and the cooler air supports more living things.</p></li>
+      <li class="stop"><h3>Greymoor</h3><p>A large region of crumbling towers and armed foes.</p></li>
+      <li class="stop"><h3>Bellhart</h3><p>A region full of bells, including a platforming stretch that uses them.</p></li>
+      <li class="stop"><h3>Shellwood</h3><p>A greener area of plants and fisherfolk.</p></li>
+      <li class="stop"><h3>Blasted Steps</h3><p>A barren, windswept climb across sandstorm country.</p></li>
+    </ol>
+    <p class="route-note">The Citadel waits at the top, with more beyond it.</p>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-skew" id="marqueeSkew">
+        <div class="marquee-track">
+          <span>Needle</span><i></i><span>Silk</span><i></i><span>Song</span><i></i><span>Bell</span><i></i><span>Moss</span><i></i><span>Citadel</span><i></i>
+          <span>Needle</span><i></i><span>Silk</span><i></i><span>Song</span><i></i><span>Bell</span><i></i><span>Moss</span><i></i><span>Citadel</span><i></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="cast" aria-labelledby="cast-h">
+    <h2 class="sec" id="cast-h">Faces on the road</h2>
+    <p class="sec-lede">Travellers, merchants, rivals and old friends from both games. These notes steer clear of late-game spoilers.</p>
+
+    <div class="group">
+      <div class="group-label">Pharloom</div>
+      <div>
+        <article class="row">
+          <div><h3>Sherma</h3><span class="role">Pilgrim</span></div>
+          <p>A devout pilgrim whose road keeps crossing Hornet's as she climbs. Gentle and sincere, he is one of the warmest faces in a dangerous kingdom.</p>
+        </article>
+        <article class="row">
+          <div><h3>Shakra</h3><span class="role">Hunter and mapmaker</span></div>
+          <p>An ally who knows Pharloom's ground well. She charts the way for others and does not hesitate to fight when it matters.</p>
+        </article>
+        <article class="row">
+          <div><h3>Lace</h3><span class="role">Fencer</span></div>
+          <p>Keeps turning up between Hornet and the Citadel. Their meetings build a sharp, personal rivalry carried mostly by conversation.</p>
+        </article>
+        <article class="row">
+          <div><h3>Garmond and Zaza</h3><span class="role">Wandering hunters</span></div>
+          <p>A pair of hunters who travel Pharloom together. Meet them on the road and see where their paths lead.</p>
+        </article>
+        <article class="row">
+          <div><h3>Pinmaster Plinney</h3><span class="role">Pin tool merchant</span></div>
+          <p>Sells the pin tools Hornet uses for ranged attacks. If you want to fight from a distance, his stall is the place to start.</p>
+        </article>
+        <article class="row">
+          <div><h3>The Bell Hermit</h3><span class="role">Crest merchant</span></div>
+          <p>Deals in crests and the slots they fit into, the gear that changes how Hornet fights.</p>
+        </article>
+        <article class="row">
+          <div><h3>Sprintmaster Swift</h3><span class="role">Movement trainer</span></div>
+          <p>Offers training that sharpens Hornet's movement, for anyone who wants to cross Pharloom faster.</p>
+        </article>
+        <article class="row">
+          <div><h3>Mister Mushroom</h3><span class="role">A cameo from Hallownest</span></div>
+          <p>A wandering fungal traveller who returns from the first game, a small reminder of where Hornet came from.</p>
+        </article>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Hallownest</div>
+      <div>
+        <article class="row">
+          <div><h3>The Knight</h3><span class="role">The Vessel</span></div>
+          <p>The silent, bug-like hero of the first game, who explores Hallownest with a nail and very little explanation.</p>
+        </article>
+        <article class="row">
+          <div><h3>Zote the Mighty</h3><span class="role">Self-declared warrior</span></div>
+          <p>A boastful fighter with a wooden nail and a bottomless supply of self-praise. Often found in trouble, and always ready with another speech.</p>
+        </article>
+        <article class="row">
+          <div><h3>Cornifer</h3><span class="role">Cartographer</span></div>
+          <p>A travelling mapmaker who charts each region as he goes, humming while he works. Finding him is the first step to knowing where you are.</p>
+        </article>
+        <article class="row">
+          <div><h3>Iselda</h3><span class="role">Map seller</span></div>
+          <p>Runs a small shop in Dirtmouth selling maps and the supplies for marking your own. Cornifer's partner in keeping the kingdom charted.</p>
+        </article>
+        <article class="row">
+          <div><h3>Quirrel</h3><span class="role">Scholar</span></div>
+          <p>A learned, courteous wanderer who studies Hallownest's history and appears at several points on the Knight's journey. He is Monomon's apprentice.</p>
+        </article>
+        <article class="row">
+          <div><h3>Elderbug</h3><span class="role">Dirtmouth resident</span></div>
+          <p>The last resident of Dirtmouth. He welcomes the Knight back each time and shares what he remembers of the town.</p>
+        </article>
+        <article class="row">
+          <div><h3>Sly</h3><span class="role">Shopkeeper</span></div>
+          <p>A Dirtmouth shopkeeper eager to sell the Knight something useful in exchange for Geo.</p>
+        </article>
+        <article class="row">
+          <div><h3>Salubra</h3><span class="role">Charm seller</span></div>
+          <p>A merchant who sells charms and extra charm slots, tucked away in the Forgotten Crossroads.</p>
+        </article>
+        <article class="row">
+          <div><h3>Grimm</h3><span class="role">Troupe Master</span></div>
+          <p>The showman at the head of a travelling troupe, whose arrival turns a corner of Hallownest into a stage.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="faq" aria-labelledby="faq-h">
+    <h2 class="sec" id="faq-h">Questions</h2>
+    <p class="sec-lede">Quick answers, including how to put your own models on this page.</p>
+
+    <div class="faq">
+      <details>
+        <summary>Is Silksong a sequel?</summary>
+        <div class="ans"><p>Yes. It is Team Cherry's follow-up to Hollow Knight, and this time you play Hornet.</p></div>
+      </details>
+      <details>
+        <summary>Do I need to play Hollow Knight first?</summary>
+        <div class="ans"><p>Silksong takes place in a new kingdom with its own journey. The first game gives helpful context for Hornet and for cameos like Mister Mushroom, and many players start there, but it is up to you.</p></div>
+      </details>
+      <details>
+        <summary>Where can I play it?</summary>
+        <div class="ans"><p>On PC, Nintendo Switch, Xbox and PlayStation. It released on 4 September 2025.</p></div>
+      </details>
+      <details>
+        <summary>How do I put my own Hornet model on this page?</summary>
+        <div class="ans">
+          <p>Save your model as <code>models/hornet.glb</code>, or point <code>modelUrl</code> in the config block at the top of the page to wherever it lives. Use <code>modelScale</code> to change the size, <code>modelOffset</code> to nudge it, and <code>modelRotationY</code> to choose which way she faces.</p>
+          <p>You can also drag a .glb onto the model window to try a file without editing anything.</p>
+        </div>
+      </details>
+      <details>
+        <summary>How do I add another model?</summary>
+        <div class="ans"><p>Use the round window at the bottom of the page. Set <code>secondModel.url</code> in the config block, along with its title, description and <code>scale</code>. The needle drifting in the background can be swapped the same way with <code>backgroundModel.url</code>.</p></div>
+      </details>
+      <details>
+        <summary>What happens when I click the model?</summary>
+        <div class="ans"><p>It gives a little jump, spins faster for a moment and throws out a burst of stars.</p></div>
+      </details>
+      <details>
+        <summary>Is this the official site?</summary>
+        <div class="ans"><p>No. It is an unofficial fan page and is not connected to Team Cherry.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <section class="about" id="about" aria-labelledby="about-h">
+    <h2 id="about-h">About this page</h2>
+    <p>Hollow Knight: Silksong is Team Cherry's follow-up to Hollow Knight, and you play Hornet as she climbs through the kingdom of Pharloom. This is a small fan tribute: notes on the cast and the basics, and windows for your own models.</p>
+  </section>
+
+  <section class="block showcase" id="gallery" aria-labelledby="second-h">
+    <div class="second-grid">
+      <div class="second-text">
+        <p class="eyebrow" id="secondEyebrow">Showcase</p>
+        <h2 class="sec" id="second-h">Your next model</h2>
+        <p class="lede" id="secondRole"></p>
+        <p class="body" id="secondBody"></p>
+      </div>
+      <div class="orb">
+        <div class="model-stage" id="stage2" tabindex="0" aria-label="Second 3D model. Drag sideways to spin it. Click or press Enter for a burst of stars.">
+          <canvas id="secondGL"></canvas>
+          <div class="slot" id="slot2">
+            <h2>Add your next model</h2>
+            <p>Drop a .glb file here, or set it in config.js.</p>
+            <button type="button" class="btn" id="pick2">Choose .glb file</button>
+          </div>
+          <div class="stage-foot">
+            <span id="status2" role="status">Drag to spin, click for stars</span>
+            <button type="button" class="btn" id="flipBtn2" hidden>Flip textures</button>
+          </div>
+          <input type="file" id="file2" accept=".glb,.png,.jpg,.jpeg,.webp" multiple hidden>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <p><strong>Unofficial fan page</strong><br>
+  Hollow Knight and Hollow Knight: Silksong belong to Team Cherry. This page uses no official art, logos or fonts. Headings are set in Grenze Gotisch and body text in Alegreya, both free on Google Fonts.</p>
+  <p>Notes written in our own words from public guides and wikis, including
+    <a href="https://hollowknight.wiki/w/Hornet_(Silksong)" target="_blank" rel="noopener">the Hollow Knight wiki</a>,
+    <a href="https://www.pcgamesn.com/hollow-knight-silksong/map" target="_blank" rel="noopener">PCGamesN</a> and
+    <a href="https://hostedgg.com/blog/silksong-beginners-guide" target="_blank" rel="noopener">Hosted.gg</a>.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  var reduced = false;
+  try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+  /* ---------- Settings: defaults, then the config block at the top of the page ---------- */
+  var CFG = {
+    modelUrl: 'models/hornet.glb', modelScale: 1, modelOffset: { x: 0, y: 0, z: 0 }, modelRotationY: 0,
+    textures: [], flipTextures: false, idleSpeed: 14, dragSensitivity: 0.009, slowDownSeconds: 1.4,
+    showSecondModel: true,
+    secondModel: { url: '', title: 'Your next model', role: 'Second model', description: '', scale: 1, offset: { x: 0, y: 0, z: 0 }, rotationY: 0, textures: [], flipTextures: false },
+    backgroundModel: { url: '', scale: 1 }
+  };
+  var user = window.SITE_CONFIG || {};
+  Object.keys(user).forEach(function (k) {
+    if ((k === 'secondModel' || k === 'backgroundModel') && user[k] && typeof user[k] === 'object') {
+      Object.keys(user[k]).forEach(function (j) { CFG[k][j] = user[k][j]; });
+    } else { CFG[k] = user[k]; }
+  });
+  CFG.modelOffset = CFG.modelOffset || { x: 0, y: 0, z: 0 };
+  var SM = CFG.secondModel; SM.offset = SM.offset || { x: 0, y: 0, z: 0 };
+
+  $('second-h').textContent = SM.title || '';
+  $('secondRole').textContent = SM.role || '';
+  $('secondBody').textContent = SM.description || '';
+  $('secondRole').hidden = !SM.role;
+  $('secondBody').hidden = !SM.description;
+  if (CFG.showSecondModel === false) { $('gallery').hidden = true; $('navGallery').hidden = true; }
+
+  /* ---------- Page animation (no 3D library needed) ---------- */
+  (function ui() {
+    /* Hornet title: letters rise in, then glint in turn */
+    var h = $('hornet-h');
+    if (!reduced) {
+      var word = h.textContent.trim();
+      h.setAttribute('aria-label', word);
+      h.textContent = '';
+      word.split('').forEach(function (ch, i) {
+        var s = document.createElement('span');
+        s.className = 'ch'; s.setAttribute('aria-hidden', 'true'); s.style.setProperty('--i', i); s.textContent = ch;
+        h.appendChild(s);
+      });
+    }
+
+    /* Scroll reveals: only things below the first screen start hidden */
+    if (!reduced && 'IntersectionObserver' in window) {
+      var groups = [
+        ['.glance > div', 'rv-scale'], ['h2.sec', ''], ['.about h2', ''], ['.sec-lede', ''], ['h3.sub', ''],
+        ['.term', ''], ['.moves > div', 'rv-scale'], ['.stop', 'rv-left'], ['.group-label', ''], ['.row', 'rv-left'],
+        ['.faq details', ''], ['.about p', ''], ['.second-text > *', ''], ['.orb', 'rv-scale']
+      ];
+      var vh = window.innerHeight, counts = new Map();
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (e.isIntersecting || e.boundingClientRect.top < 0) { show(e.target); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -5% 0px' });
+      var show = function (el) {
+        el.classList.add('in');
+        var d = parseInt(el.style.getPropertyValue('--d'), 10) || 0;
+        setTimeout(function () { el.classList.remove('rv', 'rv-left', 'rv-scale', 'in'); el.style.removeProperty('--d'); }, 1700 + d);
+      };
+      groups.forEach(function (g) {
+        document.querySelectorAll(g[0]).forEach(function (el) {
+          if (el.classList.contains('rv') || el.hidden || el.closest('[hidden]')) return;
+          if (el.getBoundingClientRect().top < vh * 0.92) return;
+          var p = el.parentNode, n = counts.get(p) || 0; counts.set(p, n + 1);
+          el.style.setProperty('--d', Math.min(n % 5, 4) * 90 + 'ms');
+          el.classList.add('rv'); if (g[1]) el.classList.add(g[1]);
+          io.observe(el);
+        });
+      });
+    }
+
+    /* One loop for the things that follow scroll and pointer */
+    var progress = $('progress'), glow = $('cursorGlow'), skewEl = $('marqueeSkew'), route = $('route');
+    var heroH1 = h, stageCol = document.querySelector('.stage-col');
+    var stops = [].slice.call(document.querySelectorAll('.stop'));
+    var lastSy = window.scrollY, skew = 0, gx = 0, gy = 0, tx = 0, ty = 0, seen = false, lastCur = -1;
+    window.addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'touch') return;
+      tx = e.clientX; ty = e.clientY;
+      if (!seen) { seen = true; gx = tx; gy = ty; glow.classList.add('on'); }
+    });
+    function tick() {
+      requestAnimationFrame(tick);
+      var sy = window.scrollY, vh = window.innerHeight;
+      var max = document.documentElement.scrollHeight - vh;
+      var routeRect = route.getBoundingClientRect();
+      var tops = stops.map(function (s) { return s.getBoundingClientRect().top; });
+
+      progress.style.transform = 'scaleX(' + (max > 0 ? clamp(sy / max, 0, 1) : 0).toFixed(4) + ')';
+      var vel = sy - lastSy; lastSy = sy;
+      skew += (clamp(vel * 0.3, -9, 9) - skew) * 0.12;
+      if (skewEl) skewEl.style.setProperty('--skew', skew.toFixed(2));
+      if (!reduced) {
+        if (sy < 1400) {
+          heroH1.style.setProperty('--py', (sy * 0.16).toFixed(1));
+          if (stageCol) stageCol.style.setProperty('--py2', (sy * -0.05).toFixed(1));
+        }
+        gx += (tx - gx) * 0.12; gy += (ty - gy) * 0.12;
+        glow.style.transform = 'translate3d(' + gx.toFixed(1) + 'px,' + gy.toFixed(1) + 'px,0)';
+      }
+      var line = vh * 0.62;
+      route.style.setProperty('--rp', clamp((line - routeRect.top) / Math.max(routeRect.height, 1), 0, 1).toFixed(4));
+      var cur = -1;
+      stops.forEach(function (s, i) {
+        var lit = tops[i] + 17 < line;
+        if (lit) cur = i;
+        if (s.classList.contains('lit') !== lit) s.classList.toggle('lit', lit);
+      });
+      if (cur !== lastCur) {
+        stops.forEach(function (s, i) { s.classList.toggle('current', i === cur); });
+        lastCur = cur;
+      }
+    }
+    tick();
+  })();
+
+  var statusEl = $('hornetStatus');
+  if (!window.THREE || !THREE.GLTFLoader) { if (statusEl) statusEl.textContent = 'The 3D library did not load. Reload the page.'; return; }
+
+  var CRIMSON = 0xdc2638, BONE = 0xf3e9e4, INK = 0x0c0508;
+  var mouseX = 0, mouseY = 0;
+  window.addEventListener('pointermove', function (e) {
+    mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+    mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+  });
+
+  /* ---------- Background: silk threads, spores, drifting shapes, and a needle that moves with scroll ---------- */
+  (function () {
+    var R;
+    try { R = new THREE.WebGLRenderer({ canvas: $('bg'), antialias: true, alpha: true }); } catch (e) { return; }
+    R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    R.outputEncoding = THREE.sRGBEncoding;
+    var S = new THREE.Scene();
+    S.fog = new THREE.FogExp2(INK, 0.045);
+    var C = new THREE.PerspectiveCamera(55, 1, 0.1, 80);
+    C.position.set(0, 0, 12);
+    var root = new THREE.Group(); S.add(root);
+
+    S.add(new THREE.HemisphereLight(0xffe9ee, 0x2a0d14, 0.75));
+    var kl = new THREE.DirectionalLight(0xffffff, 1.2); kl.position.set(4, 6, 8); S.add(kl);
+    var rl = new THREE.PointLight(0xdc2638, 2.4, 45); rl.position.set(-6, 2, 2); S.add(rl);
+
+    function rnd(a, b) { return a + Math.random() * (b - a); }
+
+    var N = 520, pos = new Float32Array(N * 3), col = new Float32Array(N * 3), spd = new Float32Array(N);
+    var cr = new THREE.Color(CRIMSON), bo = new THREE.Color(BONE);
+    for (var i = 0; i < N; i++) {
+      pos[i * 3] = rnd(-20, 20); pos[i * 3 + 1] = rnd(-16, 16); pos[i * 3 + 2] = rnd(-22, 6);
+      var c = Math.random() < 0.35 ? bo : cr; col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+      spd[i] = rnd(0.12, 0.5);
+    }
+    var pg = new THREE.BufferGeometry();
+    pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    pg.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    var dot = document.createElement('canvas'); dot.width = dot.height = 64;
+    var dx = dot.getContext('2d'), gr = dx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.4, 'rgba(255,255,255,.5)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    dx.fillStyle = gr; dx.fillRect(0, 0, 64, 64);
+    root.add(new THREE.Points(pg, new THREE.PointsMaterial({
+      size: 0.2, map: new THREE.CanvasTexture(dot), vertexColors: true, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending
+    })));
+
+    var threads = [];
+    for (var t = 0; t < 16; t++) {
+      var x0 = -17 + t * 2.3 + rnd(-0.6, 0.6), z0 = rnd(-16, 1), cps = [];
+      for (var j = 0; j < 8; j++) cps.push(new THREE.Vector3(x0, -16 + j * 4.6, z0));
+      var curve = new THREE.CatmullRomCurve3(cps);
+      var g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(90 * 3), 3));
+      var line = new THREE.Line(g, new THREE.LineBasicMaterial({ color: t % 3 === 0 ? BONE : CRIMSON, transparent: true, opacity: t % 3 === 0 ? 0.16 : 0.34 }));
+      line.frustumCulled = false; root.add(line);
+      threads.push({ curve: curve, geo: g, x0: x0, ph: rnd(0, 6.28), amp: rnd(0.5, 1.5), sp: rnd(0.15, 0.4) });
+    }
+
+    var floaters = [];
+    function addFloater(obj, rotSpd, drift) { obj.userData = { r: rotSpd, d: drift, ph: rnd(0, 6.28) }; root.add(obj); floaters.push(obj); }
+    var needleEdges = new THREE.EdgesGeometry(new THREE.ConeGeometry(0.05, 1.9, 5));
+    for (var n = 0; n < 22; n++) {
+      var nd = new THREE.LineSegments(needleEdges, new THREE.LineBasicMaterial({ color: n % 4 === 0 ? BONE : CRIMSON, transparent: true, opacity: 0.5 }));
+      nd.position.set(rnd(-16, 16), rnd(-12, 12), rnd(-14, 4)); nd.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
+      addFloater(nd, new THREE.Vector3(rnd(-0.3, 0.3), rnd(-0.3, 0.3), rnd(-0.2, 0.2)), rnd(0.2, 0.7));
+    }
+    var ringGeo = new THREE.TorusGeometry(1.2, 0.012, 6, 72);
+    for (var rn = 0; rn < 6; rn++) {
+      var rg = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: CRIMSON, transparent: true, opacity: 0.45 }));
+      rg.position.set(rnd(-14, 14), rnd(-10, 10), rnd(-14, 0)); rg.scale.setScalar(rnd(0.7, 2.2)); rg.rotation.set(rnd(0, 3), rnd(0, 3), 0);
+      addFloater(rg, new THREE.Vector3(rnd(-0.25, 0.25), rnd(-0.25, 0.25), 0), rnd(0.1, 0.4));
+    }
+    var shardEdges = new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(0.7, 0));
+    for (var sh = 0; sh < 8; sh++) {
+      var sd = new THREE.LineSegments(shardEdges, new THREE.LineBasicMaterial({ color: sh % 2 ? BONE : CRIMSON, transparent: true, opacity: 0.4 }));
+      sd.position.set(rnd(-15, 15), rnd(-11, 11), rnd(-16, -2)); sd.scale.setScalar(rnd(0.6, 1.8));
+      addFloater(sd, new THREE.Vector3(rnd(-0.2, 0.2), rnd(-0.3, 0.3), rnd(-0.2, 0.2)), rnd(0.2, 0.5));
+    }
+
+    /* The background model: a needle with a guard, a wrapped grip and a trailing silk thread, built from shapes */
+    function buildNeedle() {
+      var g = new THREE.Group();
+      function mat(color, metal, rough, emissive, ei) {
+        return new THREE.MeshStandardMaterial({ color: color, metalness: metal, roughness: rough, emissive: emissive || 0x000000, emissiveIntensity: ei || 0, transparent: true, opacity: 0.62 });
+      }
+      var steel = mat(0xe8dcde, 0.85, 0.3), dark = mat(0x4a1a22, 0.7, 0.4), silk = mat(0xdc2638, 0.1, 0.5, 0x8a1020, 0.9);
+
+      var prof = [[0, -0.3], [0.15, -0.3], [0.17, 0.4], [0.14, 2.6], [0.07, 4.0], [0, 4.9]].map(function (p) { return new THREE.Vector2(p[0], p[1]); });
+      var blade = new THREE.Mesh(new THREE.LatheGeometry(prof, 22), steel); blade.scale.z = 0.28; g.add(blade);
+
+      var guard = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.05, 10, 40, Math.PI), dark); guard.position.y = -0.3; g.add(guard);
+      [-0.58, 0.58].forEach(function (x) { var b = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 10), dark); b.position.set(x, -0.3, 0); g.add(b); });
+
+      var grip = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 1.4, 14), dark); grip.position.y = -1.0; g.add(grip);
+      var wrap = [];
+      for (var k = 0; k <= 260; k++) { var u = k / 260, a = u * Math.PI * 2 * 15; wrap.push(new THREE.Vector3(Math.cos(a) * 0.1, -0.32 - u * 1.36, Math.sin(a) * 0.1)); }
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(wrap), 520, 0.017, 5, false), silk));
+
+      var pommel = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), dark); pommel.position.y = -1.82; g.add(pommel);
+      var loop = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.03, 8, 24), steel); loop.position.y = -2.1; g.add(loop);
+
+      var tail = [];
+      for (var m = 0; m <= 14; m++) { var v = m / 14; tail.push(new THREE.Vector3(Math.sin(v * 7) * 0.55 * v, -2.25 - v * 4.2, Math.cos(v * 6) * 0.5 * v)); }
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(tail), 160, 0.016, 5, false), silk));
+      return g;
+    }
+    var needleOuter = new THREE.Group(), needleInner = new THREE.Group();
+    needleOuter.add(needleInner); needleInner.add(buildNeedle()); S.add(needleOuter);
+    var needleScale = 1;
+    var BM = CFG.backgroundModel || {};
+    if (BM.url && location.protocol !== 'file:') {
+      try {
+        new THREE.GLTFLoader().load(BM.url, function (gltf) {
+          while (needleInner.children.length) needleInner.remove(needleInner.children[0]);
+          var obj = gltf.scene, box = new THREE.Box3().setFromObject(obj), size = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
+          obj.position.sub(ctr);
+          var holder = new THREE.Group(); holder.add(obj);
+          holder.scale.setScalar(10 / (Math.max(size.x, size.y, size.z) || 1));
+          needleInner.add(holder);
+        }, undefined, function () {});
+      } catch (e) {}
+    }
+    var bgScale = Math.max(0.05, +BM.scale || 1);
+
+    function resize() {
+      var w = window.innerWidth, h = window.innerHeight;
+      R.setSize(w, h, false); C.aspect = w / h; C.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resize); resize();
+
+    var time = 0, last = performance.now(), speed = reduced ? 0 : 1;
+    var sSmooth = 0, lastSy = window.scrollY, kick = 0, spin = 0;
+    function frame(now) {
+      requestAnimationFrame(frame);
+      var dt = Math.min((now - last) / 1000, 0.1); last = now;
+      time += dt * speed;
+
+      for (var i = 0; i < threads.length; i++) {
+        var th = threads[i], pts = th.curve.points;
+        for (var j = 0; j < pts.length; j++) pts[j].x = th.x0 + Math.sin(time * th.sp + j * 0.9 + th.ph) * th.amp;
+        var arr = th.geo.attributes.position, p = th.curve.getPoints(89);
+        for (var k = 0; k < 90; k++) arr.setXYZ(k, p[k].x, p[k].y, p[k].z);
+        arr.needsUpdate = true;
+      }
+      for (var f = 0; f < floaters.length; f++) {
+        var o = floaters[f], u = o.userData;
+        o.rotation.x += u.r.x * dt * speed; o.rotation.y += u.r.y * dt * speed; o.rotation.z += u.r.z * dt * speed;
+        o.position.y += Math.sin(time * 0.5 + u.ph) * u.d * dt * speed;
+      }
+      var pa = pg.attributes.position;
+      for (var q = 0; q < N; q++) {
+        var y = pa.getY(q) + spd[q] * dt * speed;
+        if (y > 16) y = -16;
+        pa.setY(q, y);
+      }
+      pa.needsUpdate = true;
+
+      /* Needle: crosses the screen, tilts and spins as you scroll; scroll speed adds extra spin */
+      var sy = window.scrollY, max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      sSmooth += (clamp(sy / max, 0, 1) - sSmooth) * (1 - Math.exp(-dt * 5));
+      kick += (sy - lastSy) * 0.0035; lastSy = sy;
+      kick = clamp(kick, -6, 6) * Math.exp(-dt * 2.4);
+      spin += kick;
+      var halfH = 17 * Math.tan(27.5 * Math.PI / 180), halfW = halfH * C.aspect;
+      var sc = (0.5 + 0.4 * Math.min(1, C.aspect / 1.6)) * bgScale;
+      needleOuter.position.set(
+        (sSmooth * 2 - 1) * halfW * 0.62,
+        Math.sin(sSmooth * Math.PI * 3) * halfH * 0.32,
+        -5 + Math.sin(sSmooth * Math.PI) * 2.5
+      );
+      needleOuter.rotation.z = (0.5 - sSmooth) * 1.3;
+      needleOuter.scale.setScalar(sc * (0.92 + 0.16 * Math.sin(sSmooth * Math.PI)));
+      needleInner.rotation.y = sSmooth * Math.PI * 6 + spin;
+
+      root.position.y = sy * 0.006;
+      root.rotation.y += ((mouseX * 0.18) - root.rotation.y) * 0.04;
+      C.position.x += ((mouseX * 1.2) - C.position.x) * 0.04;
+      C.position.y += ((-mouseY * 0.8) - C.position.y) * 0.04;
+      C.lookAt(0, 0, 0);
+      R.render(S, C);
+    }
+    requestAnimationFrame(frame);
+  })();
+
+  /* ---------- Shared star-burst textures ---------- */
+  function makeStarTexture() {
+    var c = document.createElement('canvas'); c.width = c.height = 128;
+    var x = c.getContext('2d');
+    var g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(0.18, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+    function star(r, ri, rot, alpha) {
+      x.save(); x.translate(64, 64); x.rotate(rot); x.globalAlpha = alpha; x.fillStyle = '#fff'; x.beginPath();
+      for (var i = 0; i < 8; i++) {
+        var rad = i % 2 === 0 ? r : ri, a = i * Math.PI / 4 - Math.PI / 2;
+        if (i === 0) x.moveTo(Math.cos(a) * rad, Math.sin(a) * rad); else x.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+      }
+      x.closePath(); x.fill(); x.restore();
+    }
+    star(62, 10, 0, 1); star(34, 7, Math.PI / 4, 0.75);
+    return new THREE.CanvasTexture(c);
+  }
+  function makeRingTexture() {
+    var c = document.createElement('canvas'); c.width = c.height = 128;
+    var x = c.getContext('2d');
+    x.strokeStyle = '#fff'; x.lineWidth = 4; x.shadowColor = '#fff'; x.shadowBlur = 8;
+    x.beginPath(); x.arc(64, 64, 54, 0, Math.PI * 2); x.stroke();
+    return new THREE.CanvasTexture(c);
+  }
+  var starTex = makeStarTexture(), ringTex = makeRingTexture();
+  var PALETTE = [0xdc2638, 0xff5468, 0xf3e9e4, 0xffb3bc, 0xffffff];
+
+  /* ---------- Model windows (used for Hornet and for the second model) ---------- */
+  var stages = [];
+  var SLOT = { color: 'map', normal: 'normalMap', roughness: 'roughnessMap', metalness: 'metalnessMap', ao: 'aoMap', emissive: 'emissiveMap' };
+
+  function createStage(o) {
+    var stage = o.stage, slot = o.slot, status = o.status, M = o.cfg;
+    var R;
+    try { R = new THREE.WebGLRenderer({ canvas: o.canvas, antialias: true, alpha: true }); }
+    catch (e) { status.textContent = 'This browser could not start WebGL.'; return null; }
+    R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    R.outputEncoding = THREE.sRGBEncoding;
+
+    var S = new THREE.Scene();
+    var C = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+    S.add(new THREE.HemisphereLight(0xffeedd, 0x2a0d14, 0.8));
+    var key = new THREE.DirectionalLight(0xfff1e0, 1.3); key.position.set(3, 5, 4); S.add(key);
+    var rimL = new THREE.DirectionalLight(0xff3b52, 1.4); rimL.position.set(-4, 2, -3); S.add(rimL);
+
+    var pivot = new THREE.Group(); S.add(pivot);
+    var holder = new THREE.Group(); pivot.add(holder);
+    var ringA = new THREE.Mesh(new THREE.TorusGeometry(1.45, 0.012, 8, 128), new THREE.MeshBasicMaterial({ color: CRIMSON, transparent: true, opacity: 0.85 }));
+    var ringB = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.008, 8, 128), new THREE.MeshBasicMaterial({ color: BONE, transparent: true, opacity: 0.4 }));
+    ringA.rotation.x = ringB.rotation.x = Math.PI / 2; S.add(ringA); S.add(ringB);
+
+    var current = null, mixer = null, texList = [], flip = !!M.flipTextures;
+    var baseFit = 1, curScale = 1, modelSize = new THREE.Vector3(1, 1, 1);
+    var userScale = Math.max(0.05, +M.scale || 1), off = M.offset || { x: 0, y: 0, z: 0 };
+    var pop = 0, fx = [], visible = true;
+    var ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane();
+
+    function layoutModel() {
+      curScale = baseFit * userScale;
+      holder.position.set(+off.x || 0, +off.y || 0, +off.z || 0);
+      if (current) {
+        var r = Math.max(0.9, Math.max(modelSize.x, modelSize.z) / 2 * curScale * 1.5);
+        ringA.scale.setScalar(r / 1.45); ringB.scale.setScalar(r / 1.45);
+        ringA.position.y = ringB.position.y = -modelSize.y / 2 * curScale - 0.02 + (+off.y || 0);
+      } else {
+        ringA.scale.setScalar(userScale); ringB.scale.setScalar(userScale);
+        ringA.position.y = ringB.position.y = -1.35 * userScale + (+off.y || 0);
+      }
+    }
+    layoutModel();
+
+    function resize() {
+      var w = stage.clientWidth || 1, h = stage.clientHeight || 1;
+      R.setSize(w, h, false); C.aspect = w / h;
+      C.position.set(0, 1.0, 7.8 * Math.max(1, 0.8 / C.aspect)); C.lookAt(0, -0.05, 0);
+      C.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(stage); resize();
+
+    function setModel(obj) {
+      if (current) holder.remove(current);
+      var box = new THREE.Box3().setFromObject(obj);
+      var size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+      obj.position.sub(center);
+      var wrap = new THREE.Group(); wrap.add(obj);
+      wrap.rotation.y = (+M.rotationY || 0) * Math.PI / 180;
+      current = wrap; holder.add(wrap);
+      modelSize.copy(size);
+      baseFit = 2.7 / (Math.max(size.x, size.y, size.z) || 1);
+      layoutModel();
+      slot.hidden = true;
+      status.textContent = 'Drag to spin, click for stars';
+      applyTextures();
+    }
+
+    function guessRole(n) {
+      n = n.toLowerCase();
+      if (/normal|nrm|_n[._]/.test(n)) return 'normal';
+      if (/base.?colou?r|albedo|diffuse|_col[._]|_d[._]|colou?r/.test(n)) return 'color';
+      if (/rough|_r[._]|_rgh/.test(n)) return 'roughness';
+      if (/metal|_m[._]|_mtl/.test(n)) return 'metalness';
+      if (/(^|[^a-z])ao([^a-z]|$)|occlusion/.test(n)) return 'ao';
+      if (/emiss|emit|glow/.test(n)) return 'emissive';
+      return texList.some(function (t) { return t.role === 'color'; }) ? 'ignore' : 'color';
+    }
+    function applyTextures() {
+      if (!current) return;
+      var active = {};
+      texList.forEach(function (t) {
+        if (!t.tex) return;
+        t.tex.flipY = flip;
+        t.tex.encoding = (t.role === 'color' || t.role === 'emissive') ? THREE.sRGBEncoding : THREE.LinearEncoding;
+        t.tex.needsUpdate = true;
+        if (t.role !== 'ignore') active[t.role] = t;
+      });
+      current.traverse(function (m3) {
+        if (!m3.isMesh) return;
+        (Array.isArray(m3.material) ? m3.material : [m3.material]).forEach(function (m) {
+          if (!m.isMeshStandardMaterial) return;
+          if (!m.userData.orig) m.userData.orig = { map: m.map, normalMap: m.normalMap, roughnessMap: m.roughnessMap, metalnessMap: m.metalnessMap, aoMap: m.aoMap, emissiveMap: m.emissiveMap, color: m.color.clone(), emissive: m.emissive.clone(), roughness: m.roughness, metalness: m.metalness };
+          var g = m.userData.orig;
+          Object.keys(SLOT).forEach(function (r) { m[SLOT[r]] = active[r] ? active[r].tex : g[SLOT[r]]; });
+          m.color.copy(active.color ? new THREE.Color(0xffffff) : g.color);
+          m.emissive.copy(active.emissive ? new THREE.Color(0xffffff) : g.emissive);
+          m.roughness = active.roughness ? 1 : g.roughness;
+          m.metalness = active.metalness ? 1 : g.metalness;
+          if (active.ao && m3.geometry.attributes.uv && !m3.geometry.attributes.uv2) m3.geometry.setAttribute('uv2', m3.geometry.attributes.uv);
+          m.needsUpdate = true;
+        });
+      });
+    }
+    function addTextureSource(url, role, name) {
+      var t = { role: role || guessRole(name || url), tex: null };
+      var img = new Image();
+      img.onload = function () { var tex = new THREE.Texture(img); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.anisotropy = 8; t.tex = tex; applyTextures(); };
+      img.src = url; texList.push(t);
+    }
+    function addTextureFiles(files) {
+      files.forEach(function (f) { addTextureSource(URL.createObjectURL(f), null, f.name); });
+      o.flipBtn.hidden = false;
+    }
+    o.flipBtn.addEventListener('click', function () { flip = !flip; applyTextures(); });
+    (M.textures || []).forEach(function (t) { if (t && t.url) addTextureSource(t.url, t.role, t.url); });
+
+    var loader = new THREE.GLTFLoader();
+    function onGLB(gltf) {
+      setModel(gltf.scene);
+      mixer = null;
+      if (gltf.animations && gltf.animations.length) {
+        mixer = new THREE.AnimationMixer(current);
+        gltf.animations.forEach(function (c) { mixer.clipAction(c).play(); });
+      }
+    }
+    function loadFile(f) {
+      status.textContent = 'Loading ' + f.name + '...';
+      var r = new FileReader();
+      r.onload = function () {
+        try { loader.parse(r.result, '', onGLB, function () { status.textContent = 'Could not open that file. Export it as a plain .glb.'; }); }
+        catch (e) { status.textContent = 'Could not open that file. Export it as a plain .glb.'; }
+      };
+      r.readAsArrayBuffer(f);
+    }
+    function handleFiles(list) {
+      var arr = Array.prototype.slice.call(list);
+      var model = arr.filter(function (f) { return /\.glb$/i.test(f.name); })[0];
+      var imgs = arr.filter(function (f) { return /\.(png|jpe?g|webp)$/i.test(f.name); });
+      if (imgs.length) addTextureFiles(imgs);
+      if (model) loadFile(model);
+      else if (!imgs.length) status.textContent = 'Use a .glb file, plus PNG or JPG textures if needed.';
+    }
+    o.pick.addEventListener('click', function () { o.input.click(); });
+    o.input.addEventListener('change', function (e) { if (e.target.files.length) handleFiles(e.target.files); e.target.value = ''; });
+
+    if (M.url) {
+      if (location.protocol === 'file:') status.textContent = 'Opened from disk, so the config model cannot load. Drag your .glb here.';
+      else { try { loader.load(M.url, onGLB, undefined, function () { status.textContent = 'Could not load ' + M.url + '. Check the path in config.js.'; }); } catch (e) {} }
+    }
+
+    /* Spin: slow by default, faster while and after dragging */
+    var IDLE = (+CFG.idleSpeed || 0) * Math.PI / 180, TAU = Math.max(0.05, +CFG.slowDownSeconds || 1.4), SENS = +CFG.dragSensitivity || 0.009, MAXV = 18;
+    var angle = 0, vel = reduced ? 0 : IDLE, dragging = false, lastX = 0, lastT = 0, lastMove = 0, downX = 0, downY = 0, downT = 0;
+    function clampV(v) { return Math.max(-MAXV, Math.min(MAXV, v)); }
+
+    /* Star burst: stars, a flash and a ring, thrown out from the click point */
+    function addSprite(tex, color, p, v, size, life, kind) {
+      var m = new THREE.SpriteMaterial({ map: tex, color: color, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, rotation: Math.random() * 6.28 });
+      var sp = new THREE.Sprite(m);
+      sp.position.copy(p); sp.scale.set(0.001, 0.001, 1);
+      sp.userData = { v: v, size: size, life: life, age: 0, kind: kind, spin: (Math.random() - 0.5) * 7 };
+      S.add(sp); fx.push(sp);
+    }
+    function burst(cx, cy) {
+      var rect = stage.getBoundingClientRect();
+      ndc.set(((cx - rect.left) / rect.width) * 2 - 1, -(((cy - rect.top) / rect.height) * 2 - 1));
+      ray.setFromCamera(ndc, C);
+      var point = null;
+      if (current) { var hits = ray.intersectObject(current, true); if (hits.length) point = hits[0].point.clone(); }
+      if (!point) {
+        var nrm = C.getWorldDirection(new THREE.Vector3()).negate();
+        plane.setFromNormalAndCoplanarPoint(nrm, new THREE.Vector3(0, 0, 0));
+        point = new THREE.Vector3();
+        if (!ray.ray.intersectPlane(plane, point)) return;
+      }
+      var count = reduced ? 10 : 30;
+      for (var i = 0; i < count; i++) {
+        var a = Math.random() * Math.PI * 2, sp = (reduced ? 0.5 : 1.3) + Math.random() * 2.7;
+        var v = new THREE.Vector3(Math.cos(a) * sp, Math.sin(a) * sp + 0.6, (Math.random() - 0.3) * sp * 0.7);
+        addSprite(starTex, PALETTE[i % PALETTE.length], point, v, 0.22 + Math.random() * 0.4 + (i < 4 ? 0.25 : 0), 0.9 + Math.random() * 0.8, 'star');
+      }
+      addSprite(starTex, 0xffffff, point, new THREE.Vector3(), 1.5, 0.5, 'flash');
+      addSprite(ringTex, 0xff5468, point, new THREE.Vector3(), 1.4, 0.7, 'ring');
+      pop = 0.075;
+      vel = clampV(vel + (Math.random() < 0.5 ? -1 : 1) * 4.5);
+    }
+    function updateFx(dt) {
+      for (var i = fx.length - 1; i >= 0; i--) {
+        var sp = fx[i], u = sp.userData;
+        u.age += dt;
+        var t = u.age / u.life;
+        if (t >= 1) { S.remove(sp); sp.material.dispose(); fx.splice(i, 1); continue; }
+        var s;
+        if (u.kind === 'ring') { s = u.size * (0.2 + t * 2.2); sp.material.opacity = (1 - t) * 0.9; }
+        else if (u.kind === 'flash') { s = u.size * (0.6 + t * 0.8); sp.material.opacity = (1 - t) * (1 - t); sp.material.rotation += dt * 2; }
+        else {
+          sp.position.addScaledVector(u.v, dt);
+          u.v.multiplyScalar(Math.exp(-dt * 1.8)); u.v.y -= dt * 0.7;
+          s = u.size * (1 - t * t) * (t < 0.12 ? t / 0.12 : 1);
+          sp.material.opacity = 1 - t * t;
+          sp.material.rotation += u.spin * dt;
+        }
+        sp.scale.set(s, s, 1);
+      }
+    }
+
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('button')) return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      dragging = true; lastX = downX = e.clientX; downY = e.clientY; lastT = lastMove = downT = performance.now();
+      stage.classList.add('grabbing');
+      try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    stage.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var now = performance.now(), d = (e.clientX - lastX) * SENS;
+      angle += d;
+      vel = clampV(vel * 0.4 + (d / Math.max((now - lastT) / 1000, 0.008)) * 0.6);
+      lastX = e.clientX; lastT = lastMove = now;
+    });
+    function endDrag(e, cancelled) {
+      if (!dragging) return;
+      dragging = false; stage.classList.remove('grabbing');
+      var now = performance.now();
+      var moved = Math.sqrt(Math.pow(e.clientX - downX, 2) + Math.pow(e.clientY - downY, 2));
+      if (!cancelled && moved < 7 && now - downT < 450) burst(e.clientX, e.clientY);
+      else if (now - lastMove > 80) vel = 0;
+    }
+    stage.addEventListener('pointerup', function (e) { endDrag(e, false); });
+    stage.addEventListener('pointercancel', function (e) { endDrag(e, true); });
+    stage.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { vel = clampV(vel + 4); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { vel = clampV(vel - 4); e.preventDefault(); }
+      if (e.key === 'Enter' || e.key === ' ') {
+        var r = stage.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height * 0.5); e.preventDefault();
+      }
+    });
+
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(stage);
+
+    var last = performance.now(), t = 0;
+    function frame(now) {
+      requestAnimationFrame(frame);
+      var dt = Math.min((now - last) / 1000, 0.1); last = now;
+      if (!visible) return;
+      t += dt;
+      if (!dragging) {
+        vel += ((reduced ? 0 : IDLE) - vel) * (1 - Math.exp(-dt / TAU));
+        angle += vel * dt;
+      } else if (now - lastMove > 70) { vel *= Math.exp(-dt / 0.08); }
+      pivot.rotation.y = angle;
+      pop *= Math.exp(-dt * 7);
+      holder.scale.setScalar(curScale * (1 + pop));
+      if (!reduced) { ringA.rotation.z = t * 0.25; ringB.rotation.z = -t * 0.4; }
+      if (mixer) mixer.update(dt);
+      updateFx(dt);
+      R.render(S, C);
+    }
+    requestAnimationFrame(frame);
+
+    var api = { el: stage, handleFiles: handleFiles, isVisible: function () { return visible; } };
+    stages.push(api);
+    return api;
+  }
+
+  createStage({
+    stage: $('stage'), canvas: $('hornetGL'), slot: $('slot'), status: $('hornetStatus'), flipBtn: $('flipBtn'), pick: $('pickModel'), input: $('modelFile'),
+    cfg: { url: CFG.modelUrl, scale: CFG.modelScale, offset: CFG.modelOffset, rotationY: CFG.modelRotationY, textures: CFG.textures, flipTextures: CFG.flipTextures }
+  });
+  if (CFG.showSecondModel !== false) {
+    createStage({
+      stage: $('stage2'), canvas: $('secondGL'), slot: $('slot2'), status: $('status2'), flipBtn: $('flipBtn2'), pick: $('pick2'), input: $('file2'),
+      cfg: { url: SM.url, scale: SM.scale, offset: SM.offset, rotationY: SM.rotationY, textures: SM.textures, flipTextures: SM.flipTextures }
+    });
+  }
+
+  /* Dropping files: goes to the window under the pointer, otherwise the first one on screen */
+  function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; }
+  function targetStage(e) {
+    var el = e.target && e.target.closest ? e.target.closest('.model-stage') : null;
+    for (var i = 0; i < stages.length; i++) if (stages[i].el === el) return stages[i];
+    for (var j = 0; j < stages.length; j++) if (stages[j].isVisible()) return stages[j];
+    return stages[0];
+  }
+  function mark(target) { stages.forEach(function (s) { s.el.classList.toggle('dropping', s === target); }); }
+  window.addEventListener('dragenter', function (e) { if (hasFiles(e)) mark(targetStage(e)); });
+  window.addEventListener('dragover', function (e) { if (hasFiles(e)) { e.preventDefault(); mark(targetStage(e)); } });
+  window.addEventListener('dragleave', function (e) { if (hasFiles(e) && e.relatedTarget === null) mark(null); });
+  window.addEventListener('drop', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    var tgt = targetStage(e); mark(null);
+    if (tgt) tgt.handleFiles(e.dataTransfer.files);
+  });
+})();
+</script>
+
+</body>
+</html>
