@@ -110,7 +110,12 @@
   .model-stage.grabbing { cursor: grabbing; }
   .model-stage.dropping { border-color: var(--red); box-shadow: 0 0 0 2px var(--red); }
   .model-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-
+  .slot {
+    position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px;
+    text-align: center; padding: 120px 40px 80px; pointer-events: none;
+  }
+  .slot h2 { margin: 0; font: 700 30px/1.05 var(--display); }
+  .slot p { margin: 0; max-width: 28ch; color: var(--rose); font-size: 18px; line-height: 1.4; }
   .btn {
     font: 700 15px var(--label); letter-spacing: .16em; text-transform: uppercase; color: var(--silk);
     background: transparent; border: 0; border-bottom: 2px solid var(--red); padding: 6px 0; cursor: pointer; pointer-events: auto;
@@ -337,6 +342,11 @@
     <div class="stage-col">
       <div class="model-stage" id="stage" tabindex="0" aria-label="3D model of Hornet. Drag sideways to spin it. Click or press Enter for a burst of stars.">
         <canvas id="hornetGL"></canvas>
+        <div class="slot" id="slot">
+          <h2>Hornet's model goes here</h2>
+          <p>Set it in the config block at the top of the page, or drop a .glb file on this window.</p>
+          <button type="button" class="btn" id="pickModel">Choose .glb file</button>
+        </div>
         <div class="stage-foot">
           <span id="hornetStatus" role="status">Drag to spin, click for stars</span>
           <button type="button" class="btn" id="flipBtn" hidden>Flip textures</button>
@@ -568,6 +578,11 @@
       <div class="orb">
         <div class="model-stage" id="stage2" tabindex="0" aria-label="Second 3D model. Drag sideways to spin it. Click or press Enter for a burst of stars.">
           <canvas id="secondGL"></canvas>
+          <div class="slot" id="slot2">
+            <h2>Add your next model</h2>
+            <p>Drop a .glb file here, or set it in config.js.</p>
+            <button type="button" class="btn" id="pick2">Choose .glb file</button>
+          </div>
           <div class="stage-foot">
             <span id="status2" role="status">Drag to spin, click for stars</span>
             <button type="button" class="btn" id="flipBtn2" hidden>Flip textures</button>
