@@ -342,26 +342,19 @@
     .rv { opacity: 1 !important; transform: none !important; }
   }
 
-  /* ---------- PRELOADER ANIMATION ---------- */
+  /* ---------- IMPROVED PRELOADER ANIMATION ---------- */
   #preloader {
     position: fixed; inset: 0; z-index: 9999;
     background: var(--ink);
     display: grid; place-items: center;
     pointer-events: all;
-    transition: visibility 0.5s;
+    /* Smoothly slide up and fade out when done */
+    transition: transform 0.9s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.9s cubic-bezier(0.8, 0, 0.2, 1);
   }
-  #preloader.done { visibility: hidden; pointer-events: none; }
-
-  /* The threaded seam that splits the screen */
-  .pre-seam {
-    position: absolute; top: 50%; left: 0; right: 0; height: 1px;
-    background: var(--red);
-    box-shadow: 0 0 15px var(--red);
-    transform: scaleX(0);
-    animation: seam-draw 1.2s cubic-bezier(0.8, 0, 0.2, 1) forwards;
-  }
-  #preloader.done .pre-seam {
-    animation: seam-split 0.8s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+  #preloader.done {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* The gothic eye */
@@ -370,10 +363,17 @@
     display: grid; place-items: center;
     animation: orb-pulse 2s ease-in-out infinite;
   }
+  #preloader.done .pre-orb {
+    /* Eye pulses one last time before fading */
+    animation: final-pulse 0.8s ease-out forwards;
+  }
   .pre-ring {
     position: absolute; inset: -20px; border-radius: 50%;
     border: 1px dashed rgba(220, 38, 56, 0.4);
     animation: spin 8s linear infinite;
+  }
+  #preloader.done .pre-ring {
+    animation: final-ring 0.8s ease-out forwards;
   }
   .pre-eye {
     width: 80px; height: 80px; border-radius: 50%;
@@ -383,21 +383,48 @@
     animation: eye-open 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s forwards;
   }
 
-  @keyframes seam-draw {
-    to { transform: scaleX(1); }
+  /* The crimson flash that covers the screen on exit */
+  .pre-flash {
+    position: absolute; inset: 0;
+    background: var(--red);
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1; /* Behind the eye */
+    mix-blend-mode: screen;
   }
-  @keyframes seam-split {
-    to { transform: scaleX(1) rotate(45deg) scaleY(200); opacity: 0; }
+  #preloader.done .pre-flash {
+    animation: flash-burst 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
+
+  @keyframes seam-draw { to { transform: scaleX(1); } }
+  
   @keyframes orb-pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
   }
+  
   @keyframes eye-open {
     0% { transform: scaleY(0); opacity: 0; }
     40% { transform: scaleY(1); opacity: 1; }
     80% { transform: scaleY(0.1); opacity: 1; }
     100% { transform: scaleY(1); opacity: 1; }
+  }
+
+  @keyframes flash-burst {
+    0% { opacity: 0; transform: scale(0); border-radius: 50%; }
+    30% { opacity: 0.8; transform: scale(1); border-radius: 0; }
+    100% { opacity: 0; transform: scale(1); border-radius: 0; }
+  }
+
+  @keyframes final-pulse {
+    0% { transform: scale(1.05); }
+    30% { transform: scale(1.5); opacity: 1; filter: brightness(2); }
+    100% { transform: scale(2.5); opacity: 0; filter: brightness(3); }
+  }
+
+  @keyframes final-ring {
+    0% { transform: rotate(0deg) scale(1); opacity: 0.4; }
+    100% { transform: rotate(180deg) scale(3); opacity: 0; }
   }
 </style>
 
@@ -406,7 +433,7 @@
 
 <!-- Preloader Overlay -->
 <div id="preloader">
-  <div class="pre-seam"></div>
+  <div class="pre-flash"></div>
   <div class="pre-orb">
     <div class="pre-ring"></div>
     <div class="pre-eye"></div>
@@ -1393,7 +1420,7 @@
       if (pre.classList.contains('done')) return;
       pre.classList.add('done');
       // Remove from DOM after animation finishes to ensure it doesn't block any clicks
-      setTimeout(function () { pre.remove(); }, 1000);
+      setTimeout(function () { pre.remove(); }, 1500);
     }
 
     // Wait for the page to fully load, but ensure the animation shows for at least 2.5 seconds
